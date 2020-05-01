@@ -1,0 +1,35 @@
+
+# 获取所有片段
+GET {{host}}/snippets
+
+###
+
+# 注册一个新用户
+POST {{host}}/register
+Content-Type: application/json
+
+{"username" : "test", "password" : "fhgfghd"}
+
+
+###
+
+# 发布一个新片段（需要注册）
+POST {{host}}/snippets
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{"snippet" : {"text": "hello-world-jwt"}}
+
+###
+
+# 尝试一个错误的登录-注册
+POST http://127.0.0.1:8080/login-register
+Content-Type: application/json
+
+{"user" : "test", "password" : "invalid"}
+
+###
+POST http://localhost:8080/login
+Content-Type: application/x-www-form-urlencoded;charset=utf-8
+
+username=qqq&password=11111
