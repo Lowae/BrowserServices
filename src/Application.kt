@@ -14,6 +14,7 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.http.ContentType
 import io.ktor.http.Cookie
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.auth.parseAuthorizationHeader
 import io.ktor.http.content.PartData
@@ -22,10 +23,12 @@ import io.ktor.http.content.streamProvider
 import io.ktor.jackson.jackson
 import io.ktor.request.receive
 import io.ktor.request.receiveMultipart
+import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.post
+import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.util.date.GMTDate
 import kotlinx.coroutines.CoroutineDispatcher
@@ -40,6 +43,7 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
@@ -127,7 +131,7 @@ fun Application.module() {
                         httpOnly = true
                     )
                 )
-                call.respond(mapOf("OK" to true))
+                call.respond(mapOf("OK" to true, "token" to token))
             }
         }
 
@@ -148,13 +152,16 @@ fun Application.module() {
             multiPart.forEachPart { part ->
                 when (part) {
                     is PartData.FileItem -> {
+                        val username = part.headers["Authorization"] ?: return@forEachPart
                         val ext = File(part.originalFileName.toString()).extension
-                        val file = File(SAVE_FILE_PATH, "upload-${System.currentTimeMillis()}.$ext")
+                        val file =
+                            File(SAVE_FILE_PATH, "${username}-${System.currentTimeMillis()}.$ext")
                         part.streamProvider().use { input ->
                             file.outputStream().buffered().use { output ->
                                 input.copyToSuspend(output)
                             }
                         }
+                        UserService.update(username, file.absolutePath)
                         println("success -------- ${file.absolutePath}")
                     }
                     else -> {
@@ -162,6 +169,12 @@ fun Application.module() {
                 }
                 part.dispose()
             }
+        }
+
+        get("/file") {
+            val username = call.request.queryParameters["Authorization"]
+            val fileName = UserService.getUserByName(username.toString())?.path
+            call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"$fileName\"")
         }
     }
 }
@@ -182,6 +195,7 @@ object JWTUtil {
 object Users : IntIdTable(name = "user") {
     val username = varchar("username", 50).uniqueIndex()
     val password = varchar("password", 100)
+    val path = varchar("path", 50)
 }
 
 class User(id: EntityID<Int>) : IntEntity(id) {
@@ -189,6 +203,7 @@ class User(id: EntityID<Int>) : IntEntity(id) {
 
     var username by Users.username
     var password by Users.password
+    var path by Users.path
 }
 
 class LoginRegister(val username: String, val password: String)
@@ -207,7 +222,18 @@ object UserService {
                 this.password = password
             }
         }
+    }
 
+    fun update(username: String, path: String): Boolean {
+        return transaction {
+            val result = User.find { Users.username eq username }
+            if (result.empty()) {
+                return@transaction false
+            } else {
+                result.first().path = path
+                return@transaction true
+            }
+        }
     }
 }
 
