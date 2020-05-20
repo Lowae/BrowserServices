@@ -1,14 +1,9 @@
-
-# 获取所有片段
-GET {{host}}/snippets
-
-###
-
 # 注册一个新用户
-POST {{host}}/register
+POST http://120.27.225.174:8080/register
 Content-Type: application/json
 
-{"username" : "test", "password" : "fhgfghd"}
+{"username" : "1538196177@qq.com", "password" : "lh19990428"}
+
 
 
 ###

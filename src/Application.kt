@@ -195,7 +195,7 @@ object JWTUtil {
 object Users : IntIdTable(name = "user") {
     val username = varchar("username", 50).uniqueIndex()
     val password = varchar("password", 100)
-    val path = varchar("path", 50)
+    val path = varchar("path", 50).default("")
 }
 
 class User(id: EntityID<Int>) : IntEntity(id) {
