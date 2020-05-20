@@ -165,6 +165,7 @@ fun Application.module() {
                         }
                         UserService.update(username, file.absolutePath)
                         println("success -------- ${file.absolutePath}")
+                        call.respond(mapOf("OK" to true))
                     }
                     else -> {
                     }
