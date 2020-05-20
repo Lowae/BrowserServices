@@ -57,7 +57,7 @@ const val JWT_SECRET = "asdkjkajsdkjqwne"
 const val INPUT_USERNAME = "username"
 const val INPUT_PASSWORD = "password"
 const val ISSUER = "ktor-demo"
-const val SAVE_FILE_PATH = "E:\\workspace\\BrowserServices"
+const val SAVE_FILE_PATH = "/home/Files"
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -67,7 +67,7 @@ fun Application.module() {
     Database.connect(
         url = "jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&failOverReadOnly=false&maxReconnects=10",
         user = "root",
-        password = "lh19990428",
+        password = "Lh19990428.",
         driver = "com.mysql.jdbc.Driver"
     )
     transaction { SchemaUtils.createMissingTablesAndColumns(Users) }
