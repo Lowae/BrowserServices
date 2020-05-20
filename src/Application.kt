@@ -150,13 +150,14 @@ fun Application.module() {
             println("---------------------- file ---------------------")
             val multiPart = call.receiveMultipart()
             multiPart.forEachPart { part ->
-                when (part) {
-                    is PartData.FileItem -> {
+                when (part.contentType) {
+                    ContentType.MultiPart.FormData -> {
+                        val data = part as PartData.FileItem
                         val username = part.headers["Authorization"] ?: return@forEachPart
-                        val ext = File(part.originalFileName.toString()).extension
+                        val ext = File(data.originalFileName.toString()).extension
                         val file =
                             File(SAVE_FILE_PATH, "${username}-${System.currentTimeMillis()}.$ext")
-                        part.streamProvider().use { input ->
+                        data.streamProvider().use { input ->
                             file.outputStream().buffered().use { output ->
                                 input.copyToSuspend(output)
                             }

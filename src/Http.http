@@ -4,7 +4,11 @@ Content-Type: application/json
 
 {"username" : "1538196177@qq.com", "password" : "lh19990428"}
 
+###
+POST http://120.27.225.174:8080/login
+Content-Type: application/x-www-form-urlencoded;charset=utf-8
 
+username=test&password=670b14728ad9902aecba32e22fa4f6bd
 
 ###
 
@@ -23,8 +27,4 @@ Content-Type: application/json
 
 {"user" : "test", "password" : "invalid"}
 
-###
-POST http://localhost:8080/login
-Content-Type: application/x-www-form-urlencoded;charset=utf-8
 
-username=qqq&password=11111
